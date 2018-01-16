@@ -67,6 +67,28 @@
       markerCssStyles: MARKER_CSS_STYLES,
 
       circleCssStyles: CIRCLE_CSS_STYLES
+    },
+    orientations = {
+      "top-to-bottom": {
+        size: [renderOptions.svgWidth, renderOptions.svgHeight],
+        x: function(d) { return d.x; },
+        y: function(d) { return d.y; }
+      },
+      "right-to-left": {
+        size: [renderOptions.svgHeight, renderOptions.svgWidth],
+        x: function(d) { return renderOptions.svgWidth - d.y; },
+        y: function(d) { return d.x; }
+      },
+      "bottom-to-top": {
+        size: [renderOptions.svgWidth, renderOptions.svgHeight],
+        x: function(d) { return d.x; },
+        y: function(d) { return renderOptions.svgHeight - d.y; }
+      },
+      "left-to-right": {
+        size: [renderOptions.svgHeight, renderOptions.svgWidth],
+        x: function(d) { return d.y; },
+        y: function(d) { return d.x; }
+      }
     };
 
   function GraphLink(params) {
@@ -85,9 +107,17 @@
       type: params.type || UPSALE_TYPE
     };
   }
+
   function reduceArray(arr) {
     return arr.reduce(function (map, item) {
-      map[item.product_id] =  item;
+      map[item.product_id] = item;
+      return map;
+    }, {});
+  }
+
+  function reduceArrayNodes(arr) {
+    return arr.reduce(function (map, {data = {}}) {
+      map[data.product_id] = data;
       return map;
     }, {});
   }
@@ -181,7 +211,7 @@
         node.children = [upsaleNode, downsaleNode];
       }
     }
-    addEmptyNodes(treeData[0]);
+    // addEmptyNodes(treeData[0]);
     return treeData[0];
   }
 
@@ -204,26 +234,25 @@
         return nodeClasses;
       })
       .attr("data-index", function (d) {
-        return d.index;
+        return d.data.index;
       })
       .attr("data-parent-index", function (d) {
         if (d.parent) {
-          return d.parent.index;
+          return d.parent.data.index;
         }
       })
       .attr("data-type", function (d) {
-        return d.type;
+        return d.data.type;
       })
       .attr("transform", function (d) {
-        return "translate(" + d.y + "," + d.x + ")";
+        return "translate(" + (renderOptions.svgHeight - d.y) + "," + d.x + ")";
       });
   }
 
   function drawLinks(links, nodes) {
-    var diagonal = window.d3.svg.diagonal()
-        .projection(function (d) {
-          return [d.y, d.x];
-        }),
+    var diagonal = d3.linkHorizontal()
+      .x(function(d) { return renderOptions.svgHeight - d.y; })
+      .y(function(d) { return d.x; }),
       link,
       nodesMap,
       targets,
@@ -236,24 +265,21 @@
       });
     link.enter().insert("path", "g")
       .attr("class", function (d) {
-        var linkClasses = renderOptions.classes.linkClass + " " + d.target.type;
+        var linkClasses = renderOptions.classes.linkClass + " " + d.target.data.type;
         if (d.source.data_targets_id) {
           targets = d.source.data_targets_id;
           targets.forEach(function (currentTarget) {
-            if (currentTarget.type === d.target.type) {
+            if (currentTarget.data.type === d.target.data.type) {
               linkClasses += ' ' + renderOptions.classes.classToHideElement;
             }
           });
         }
         return linkClasses;
       })
-      .attr("d", function (d) {
-        return diagonal(d);
-      })
+      .attr("d", diagonal)
       .attr("marker-end", function (d) {
-        return "url(#" + d.target.type + renderOptions.markerClassEnd + ")";
+        return "url(#" + d.target.data.type + renderOptions.markerClassEnd + ")";
       });
-
 
     maxTargetsCount = 0;
 
@@ -331,24 +357,23 @@
     var margin = renderOptions.svgMargin,
       width = renderOptions.svgWidth - margin.right - margin.left,
       height = renderOptions.svgHeight - margin.top - margin.bottom,
-      tree,
+      treeNodeRoot,
       nodes,
       nodeGroup,
       links,
       nodesMap,
       isBackRelations;
 
-    tree = window.d3.layout.tree()
-      .size([height, width]);
-
-    svg = window.d3.select(".graph-container").append("svg")
+      
+      svg = d3.select(".graph-container")
+      .append("svg")
       .attr("width", width + margin.right + margin.left)
       .attr("height", height + margin.top + margin.bottom)
       .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-    ////Append arrow
+      ////Append arrow
     svg.append("svg:defs").selectAll("marker")
-      .data([renderOptions.upsaleMarkerClass, renderOptions.downsaleMarkerClass])
+    .data([renderOptions.upsaleMarkerClass, renderOptions.downsaleMarkerClass])
       .enter().append("svg:marker")
       .attr("id", String)
       .attr("class", String)
@@ -361,11 +386,18 @@
       .append("svg:path")
       .attr("d", "M0,-5L10,0L0,5");
 
+    /* tree = d3.tree(root)
+      .size([height, width]); */
+    tree = d3.tree()
+    .size([height, width]);
+      
+    treeNodeRoot = d3.hierarchy(root);
     // Compute the new tree layout.
-    nodes = tree.nodes(root).reverse();
-    links = tree.links(nodes);
+    // nodes = tree.nodes(root).reverse();
+    nodes = tree(treeNodeRoot).descendants();
+    links = tree(treeNodeRoot).links();
 
-    nodesMap = reduceArray(nodes);
+    nodesMap = reduceArrayNodes(nodes);
 
     function replaceNodeAndChildren(node, root, distance) {
       if (node.children) {
@@ -405,7 +437,11 @@
       }
     }
 
-    addFixedDepth();
+    /*
+      Altera a profundidade dos nós, mudando a propriedade depth
+      Quando tiver que renderizar as raias, a posição dos nós pode ser alterada por aqui para coloca-los dentro delas
+    */
+    //addFixedDepth();
 
     nodeGroup = drawNodes(nodes);
 
@@ -423,7 +459,7 @@
         /*jslint nomen: true*/
         return d.children || d._children ? "end" : "start";
       })
-      .text(function (d) { return d.name; })
+      .text(function (d) { return `${d.data.name} ${d.depth}`; })
       .style("fill-opacity", renderOptions.circleCssStyles.fillOpacity);
 
     drawLinks(links, nodes);
@@ -468,6 +504,10 @@
     }
   }
 
+  /**
+   * Função que é chamada ao clicar em um dos nós.
+   * Uma modal é aberta contendo um select para escolher o texto que será inserido no nó
+   */
   function nodeClickHandler() {
     var $target = $(this),
       template = app.productsSelectOptions,
