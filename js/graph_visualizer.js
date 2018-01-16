@@ -1,23 +1,52 @@
 (function () {
+  var ETAPAS = {
+    MATURACAO: 4,
+    FILTRACAO: 3,
+    ASSEPSIA: 2,
+    ADEGA: 1,
+    FINAL: 0,
+  }
+  var COLUNAS_ETAPAS = [
+    {
+      order: 4,
+      description: "Maturação",
+    },
+    {
+      order: 3,
+      description: "Filtração"
+    },
+    {
+      order: 2,
+      description: "Assepsia"
+    },
+    {
+      order: 1,
+      description: "Adega"
+    },
+    {
+      order: 0,
+      description: "Packaging"
+    }
+  ];
   var linksData = [
-    { "product_id": 6, "name": "CallOfDuty", "parents_id": [{id: 3, "type": "downsale"}]},
-    { "product_id": 1, "name": "World Of Warcraft", "parents_id": [{id: 2, "type": "upsale"}]},
-    { "product_id": 2, "name": "Prince of Persia", "parents_id": null },
-    { "product_id": 3, "name": "Assassin's Creed", "parents_id": [{id: 1, "type": "upsale"}]},
-    { "product_id": 4, "name": "Diablo", "parents_id": [{id: 1, "type": "downsale"}]},
-    { "product_id": 5, "name": "Lineage 2 Classic", "parents_id": [{id: 2, "type": "downsale"}]},
-    { "product_id": 7, "name": "CounterStrike 1.6", "parents_id": [{id: 5, "type": "upsale"}, {id: 4, "type": "upsale"}]},
-    { "product_id": 8, "name": "GTA San Andreas", "parents_id": [{id: 7, "type": "downsale"},
-        {id: 4, "type": "downsale"}]},
-    { "product_id": 9, "name": "Cossacks: European battles", "parents_id": [{id: 8, "type": "downsale"},
-        {id: 5, "type": "downsale"}]}
+    { "product_id": 1, "name": "A - FINAL", "etapa": ETAPAS.FINAL, "parents_id": null},
+    { "product_id": 2, "name": "B - ADEGA", "etapa": ETAPAS.ADEGA, "parents_id": [{id: 1, "type": "upsale"}]},
+    { "product_id": 3, "name": "C - ADEGA", "etapa": ETAPAS.ADEGA, "alert": true, "parents_id": [{id: 1, "type": "upsale"}] },
+    { "product_id": 4, "name": "D - ADEGA", "etapa": ETAPAS.ADEGA, "parents_id": [{id: 1, "type": "downsale"}]},
+    { "product_id": 5, "name": "E - ADEGA", "etapa": ETAPAS.ADEGA, "parents_id": [{id: 1, "type": "downsale"}]},
+    { "product_id": 6, "name": "F - ASSEPSIA", "etapa": ETAPAS.ASSEPSIA, "parents_id": [{id: 2, "type": "downsale"}]},
+    { "product_id": 7, "name": "G - ASSEPSIA", "etapa": ETAPAS.ASSEPSIA, "parents_id": [{id: 3, "type": "downsale"}]},
+    { "product_id": 8, "name": "H - FILTRACAO", "etapa": ETAPAS.FILTRACAO, "parents_id": [{id: 2, "type": "upsale"}, {id: 3, "type": "downsale"}]},
+    { "product_id": 9, "name": "I - MATURACAO", "etapa": ETAPAS.MATURACAO, "parents_id": [{id: 8, "type": "downsale"}]},
+    { "product_id": 10, "name": "J - MATURACAO","etapa": ETAPAS.MATURACAO, "parents_id": [{id: 8, "type": "downsale"}]},
+    { "product_id": 11, "name": "K - MATURACAO","etapa": ETAPAS.MATURACAO, "parents_id": [{id: 7, "type": "upsale"}]}
   ],
     $productsSelect = $('select.products-select'),
     svg,
     DOWNSALE_TYPE = 'downsale',
     UPSALE_TYPE = 'upsale',
-    SVG_WIDTH = 1400,
-    SVG_HEIGHT = 500,
+    SVG_WIDTH = 1500,
+    SVG_HEIGHT = 600,
     SVG_MARGIN = {top: 20, right: 120, bottom: 20, left: 120},
     MARKER_CLASS_END = '_marker',
     UPSALE_MARKER_CLASS = "upsale",
@@ -25,9 +54,12 @@
     CLASS_TO_HIDE_ELEMENT = 'hidden',
     LINK_CLASS = 'link',
     NODE_CLASS = 'node',
-    SPACE_BETWEEN_DEPTH_LEVELS = 180,
+    SPACE_BETWEEN_DEPTH_LEVELS = 300,
     TOP_DIRECTED_LINK_PATH_COORD = 0,
     BOTTOM_DIRECTED_LINK_PATH_COORD = 500,
+    BOX_WIDTH = 150,
+    BOX_HEIGHT = 60,
+    COLUNA_WIDTH = 300,
     MARKER_CSS_STYLES = {
       viewBox: '0 -5 10 10',
       refX: 18,
@@ -67,28 +99,6 @@
       markerCssStyles: MARKER_CSS_STYLES,
 
       circleCssStyles: CIRCLE_CSS_STYLES
-    },
-    orientations = {
-      "top-to-bottom": {
-        size: [renderOptions.svgWidth, renderOptions.svgHeight],
-        x: function(d) { return d.x; },
-        y: function(d) { return d.y; }
-      },
-      "right-to-left": {
-        size: [renderOptions.svgHeight, renderOptions.svgWidth],
-        x: function(d) { return renderOptions.svgWidth - d.y; },
-        y: function(d) { return d.x; }
-      },
-      "bottom-to-top": {
-        size: [renderOptions.svgWidth, renderOptions.svgHeight],
-        x: function(d) { return d.x; },
-        y: function(d) { return renderOptions.svgHeight - d.y; }
-      },
-      "left-to-right": {
-        size: [renderOptions.svgHeight, renderOptions.svgWidth],
-        x: function(d) { return d.y; },
-        y: function(d) { return d.x; }
-      }
     };
 
   function GraphLink(params) {
@@ -107,17 +117,15 @@
       type: params.type || UPSALE_TYPE
     };
   }
-
   function reduceArray(arr) {
     return arr.reduce(function (map, item) {
-      map[item.product_id] = item;
+      map[item.product_id] =  item;
       return map;
     }, {});
   }
-
-  function reduceArrayNodes(arr) {
-    return arr.reduce(function (map, {data = {}}) {
-      map[data.product_id] = data;
+  function reduceArrayNode(arr) {
+    return arr.reduce(function (map, item) {
+      map[item.data.product_id] =  item;
       return map;
     }, {});
   }
@@ -153,65 +161,7 @@
       }
 
     });
-
-    function addEmptyNodes(node) {
-      var upsaleNode,
-        downsaleNode,
-        someNode;
-      if (node.children) {
-        //Should to add only 1 empty node
-        node.children.forEach(function (child) {
-          addEmptyNodes(child);
-        });
-
-        if (node.children.length === 1) {
-          someNode = new Node({
-            parent: node
-          });
-          if (node.children[0].type === UPSALE_TYPE) {
-            someNode.type = DOWNSALE_TYPE;
-          } else {
-            someNode.type = UPSALE_TYPE;
-          }
-
-          if (node.data_targets_id) {
-            node.data_targets_id.forEach(function (currentTarget) {
-              if (currentTarget.type !== node.children[0].type) {
-                someNode.hidden = true;
-              }
-            });
-          }
-
-          node.children.push(someNode);
-        }
-        //Change upsale to be first, cause it will be displayed by d3 as top node of two children
-        node.children.sort(function (child) {
-          return child.type === DOWNSALE_TYPE ? 1 : -1;
-        });
-
-      } else {
-        //Should to add 2 empty nodes
-        upsaleNode = new Node({
-          parent: node,
-          type: UPSALE_TYPE
-        });
-        downsaleNode = new Node({
-          parent: node,
-          type: DOWNSALE_TYPE
-        });
-        if (node.data_targets_id) {
-          node.data_targets_id.forEach(function (currentTarget) {
-            if (currentTarget.type === UPSALE_TYPE) {
-              upsaleNode.hidden = true;
-            } else {
-              downsaleNode.hidden = true;
-            }
-          });
-        }
-        node.children = [upsaleNode, downsaleNode];
-      }
-    }
-    // addEmptyNodes(treeData[0]);
+    
     return treeData[0];
   }
 
@@ -245,20 +195,32 @@
         return d.data.type;
       })
       .attr("transform", function (d) {
-        return "translate(" + (renderOptions.svgHeight - d.y) + "," + d.x + ")";
+        return "translate(" + (/* renderOptions.svgHeight -  */d.y + ( COLUNA_WIDTH * 0.25 )) + "," + d.x + ")";
       });
   }
 
   function drawLinks(links, nodes) {
-    var diagonal = d3.linkHorizontal()
-      .x(function(d) { return renderOptions.svgHeight - d.y; })
-      .y(function(d) { return d.x; }),
-      link,
-      nodesMap,
-      targets,
-      maxTargetsCount;
+    var diagonal = function(d) {
+      console.log('diagonal', d)
+      return "M" + (d.source.y + BOX_WIDTH + ( COLUNA_WIDTH * 0.25 )) + "," + (d.source.x + (BOX_HEIGHT / 2))
+        + "C" + (d.source.y + d.target.y) / 2 + "," + d.source.x
+        + " " + (d.source.y + d.target.y) / 2 + "," + d.target.x
+        + " " + (d.target.y + ( COLUNA_WIDTH * 0.25 )) + "," + (d.target.x + (BOX_HEIGHT / 2));
+    };
+
+    var diagonal2 = function(d) {
+      console.log('diagonal', d)
+      return "M" + (d.source.y + BOX_WIDTH + ( COLUNA_WIDTH * 0.25 )) + "," + (d.source.x + (BOX_HEIGHT / 2))
+        + "Q" + (((d.source.y + d.target.y) / 2) + BOX_WIDTH / 2) + " " + d.source.x
+        + ", " + (d.target.y + ( COLUNA_WIDTH * 0.25 )) + "," + (d.target.x + (BOX_HEIGHT / 2));
+    };
+
+    var link,
+    nodesMap,
+    targets,
+    maxTargetsCount;
     //Drawing links for one parent
-    nodesMap = reduceArray(nodes);
+    nodesMap = reduceArrayNode(nodes);
     link = svg.selectAll("path.link")
       .data(links, function (d) {
         return d.target.id;
@@ -276,10 +238,13 @@
         }
         return linkClasses;
       })
-      .attr("d", diagonal)
+      .attr("d", function (d) {
+        return diagonal2(d);
+      })
       .attr("marker-end", function (d) {
         return "url(#" + d.target.data.type + renderOptions.markerClassEnd + ")";
       });
+
 
     maxTargetsCount = 0;
 
@@ -287,8 +252,8 @@
     function addSpecialParent(position) {
       link.enter().insert("path", "g")
         .attr("d", function (d) {
-          if (d.source.data_targets_id) {
-            targets = d.source.data_targets_id;
+          if (d.source.data.data_targets_id) {
+            targets = d.source.data.data_targets_id;
             var length = targets.length,
               sep = ',',
               newPath = '',
@@ -330,16 +295,16 @@
           }
         })
         .attr("class", function (d) {
-          if (d.source.data_targets_id) {
-            targets = d.source.data_targets_id;
+          if (d.source.data.data_targets_id) {
+            targets = d.source.data.data_targets_id;
             if (position < targets.length) {
-              return renderOptions.classes.linkClass + ' ' + targets[position].type;
+              return renderOptions.classes.linkClass + ' ' + targets[position].type+' dd';
             }
           }
         })
         .attr("marker-end", function (d) {
-          if (d.source.data_targets_id) {
-            targets = d.source.data_targets_id;
+          if (d.source.data.data_targets_id) {
+            targets = d.source.data.data_targets_id;
             if (position < targets.length) {
               return "url(#" + targets[position].type + renderOptions.markerClassEnd + ")";
             }
@@ -353,51 +318,86 @@
     }
   }
 
+  function renderSVG() {
+    var margin = renderOptions.svgMargin,
+      width = renderOptions.svgWidth - margin.right - margin.left,
+      height = renderOptions.svgHeight - margin.top - margin.bottom;
+
+    window.d3.select(".graph-container").append("svg")
+    .attr("width", width + margin.right + margin.left)
+    .attr("height", SVG_HEIGHT + margin.top)
+    .attr("transform", "translate(0, 25)")
+  }
+  
+  function renderAreas() {
+    const colunas = window.d3.select("svg")
+      .append("g").selectAll("g.area")
+      .data(COLUNAS_ETAPAS)
+      .enter()
+      .append("g").attr("class", "area")
+      .attr("transform", (d) => {
+        return `translate(${d.order * COLUNA_WIDTH}, ${0})`;
+      });
+
+    colunas.append("rect")
+      .attr("width", COLUNA_WIDTH)
+      .attr("height", SVG_HEIGHT + SVG_MARGIN.top)
+      .attr("fill", "transparent")
+      .attr("stroke", "#000")
+      .attr("stroke-width", 1);
+
+    const tituloColuna = colunas.append("g")
+    
+    tituloColuna.append("rect")
+      .attr("width", COLUNA_WIDTH - 1)
+      .attr("height", 25)
+      .attr("fill", "#6ba4dc");
+
+    tituloColuna.append("text")
+      .attr("class", "column-title")
+      .attr("x", 10)
+      .attr("y", 18)
+      .text((d) => d.description);
+  }
+
   function renderTree(root, nodeClickHandler) {
     var margin = renderOptions.svgMargin,
       width = renderOptions.svgWidth - margin.right - margin.left,
       height = renderOptions.svgHeight - margin.top - margin.bottom,
-      treeNodeRoot,
+      tree,
       nodes,
       nodeGroup,
       links,
       nodesMap,
       isBackRelations;
 
-      
-      svg = d3.select(".graph-container")
-      .append("svg")
-      .attr("width", width + margin.right + margin.left)
-      .attr("height", height + margin.top + margin.bottom)
+    tree = window.d3.tree()
+      .size([height, width]);
+
+    svg = window.d3.select("svg")
       .append("g")
-      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-      ////Append arrow
-    svg.append("svg:defs").selectAll("marker")
-    .data([renderOptions.upsaleMarkerClass, renderOptions.downsaleMarkerClass])
-      .enter().append("svg:marker")
-      .attr("id", String)
-      .attr("class", String)
-      .attr("viewBox", renderOptions.markerCssStyles.viewBox)
-      .attr("refX", renderOptions.markerCssStyles.refX)
-      .attr("refY", renderOptions.markerCssStyles.refY)
-      .attr("markerWidth", renderOptions.markerCssStyles.markerWidth)
-      .attr("markerHeight", renderOptions.markerCssStyles.markerHeight)
-      .attr("orient", renderOptions.markerCssStyles.orient)
-      .append("svg:path")
-      .attr("d", "M0,-5L10,0L0,5");
+      .attr("transform", "translate(0," + margin.top + ")");
 
-    /* tree = d3.tree(root)
-      .size([height, width]); */
-    tree = d3.tree()
-    .size([height, width]);
-      
-    treeNodeRoot = d3.hierarchy(root);
+    /* svg.append("svg:defs").selectAll("marker")
+      .data([renderOptions.upsaleMarkerClass, renderOptions.downsaleMarkerClass])
+        .enter().append("svg:marker")
+        .attr("id", String)
+        .attr("class", String)
+        .attr("viewBox", renderOptions.markerCssStyles.viewBox)
+        .attr("refX", renderOptions.markerCssStyles.refX)
+        .attr("refY", renderOptions.markerCssStyles.refY)
+        .attr("markerWidth", renderOptions.markerCssStyles.markerWidth)
+        .attr("markerHeight", renderOptions.markerCssStyles.markerHeight)
+        .attr("orient", renderOptions.markerCssStyles.orient)
+        .append("svg:path")
+      .attr("d", "M0,-5L10,0L0,5"); */
+
     // Compute the new tree layout.
-    // nodes = tree.nodes(root).reverse();
-    nodes = tree(treeNodeRoot).descendants();
-    links = tree(treeNodeRoot).links();
-
-    nodesMap = reduceArrayNodes(nodes);
+    var layout = d3.hierarchy(root);
+    tree(layout);
+    nodes = layout.descendants().reverse();
+    links = layout.links();
+    nodesMap = reduceArray(nodes);
 
     function replaceNodeAndChildren(node, root, distance) {
       if (node.children) {
@@ -413,6 +413,7 @@
     isBackRelations = false;
 
     nodes.forEach(function (d) {
+      d.depth = d.data.etapa;
       d.y = d.depth * renderOptions.spaceBetweenDepthLevels;
     });
 
@@ -437,17 +438,19 @@
       }
     }
 
-    /*
-      Altera a profundidade dos nós, mudando a propriedade depth
-      Quando tiver que renderizar as raias, a posição dos nós pode ser alterada por aqui para coloca-los dentro delas
-    */
-    //addFixedDepth();
+    // addFixedDepth();
 
     nodeGroup = drawNodes(nodes);
 
-    nodeGroup.append("circle")
-      .attr("r", renderOptions.circleCssStyles.r)
-      .style("fill", renderOptions.circleCssStyles.fill);
+    nodeGroup.append("rect")
+      .attr("width", BOX_WIDTH)
+      .attr("height", BOX_HEIGHT)
+      .attr("fill", "#fff")
+      .attr("stroke", (d) => {
+        if (d.data.alert) return "#f00"
+        return "#000"
+      })
+      .attr("stroke-width", 1);
 
     nodeGroup.append("text")
       .attr("x", function (d) {
@@ -455,11 +458,8 @@
         return d.children || d._children ? renderOptions.circleCssStyles.text.right : renderOptions.circleCssStyles.text.left;
       })
       .attr("dy", renderOptions.circleCssStyles.text.dy)
-      .attr("text-anchor", function (d) {
-        /*jslint nomen: true*/
-        return d.children || d._children ? "end" : "start";
-      })
-      .text(function (d) { return `${d.data.name} ${d.depth}`; })
+      .attr("text-anchor", "start")
+      .text(function (d) { return d.data.name; })
       .style("fill-opacity", renderOptions.circleCssStyles.fillOpacity);
 
     drawLinks(links, nodes);
@@ -504,10 +504,6 @@
     }
   }
 
-  /**
-   * Função que é chamada ao clicar em um dos nós.
-   * Uma modal é aberta contendo um select para escolher o texto que será inserido no nó
-   */
   function nodeClickHandler() {
     var $target = $(this),
       template = app.productsSelectOptions,
@@ -553,6 +549,8 @@
     });
   }
 
+  renderSVG();
+  renderAreas();
   renderTree(generateTree(linksData), nodeClickHandler);
 
 }());

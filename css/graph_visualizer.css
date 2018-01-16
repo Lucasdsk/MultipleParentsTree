@@ -26,20 +26,18 @@
   fill: none;
   stroke: #ccc;
   stroke-width: 2px;
-}
-
-.graph-container .link.upsale {
-  stroke: #15a31f;
-}
-
-.graph-container .link.downsale {
-  stroke: #FF0000;
+  stroke: #6ba4dc;
 }
 
 .graph-container marker.upsale_marker {
-  fill: #15a31f;
+  fill: #6ba4dc;
 }
 
 .graph-container marker.downsale_marker {
-  fill: #FF0000;
+  fill: #6ba4dc;
+}
+
+.graph-container .area .column-title {
+  font-size: 1em;
+  color: red;
 }
