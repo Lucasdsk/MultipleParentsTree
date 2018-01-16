@@ -324,13 +324,21 @@
       height = renderOptions.svgHeight - margin.top - margin.bottom;
 
     window.d3.select(".graph-container").append("svg")
-    .attr("width", width + margin.right + margin.left)
-    .attr("height", SVG_HEIGHT + margin.top)
-    .attr("transform", "translate(0, 25)")
+      .attr("width", width + margin.right + margin.left)
+      .attr("height", SVG_HEIGHT + margin.top)
+      .attr("transform", "translate(0, 25)")
+      .append("g")
+        .attr("class", "svg-container")        
+        .call(d3.drag().on("drag", dragged));
+  }
+
+  function dragged(d) {
+    console.log('dragged', d)
+    d3.select(this).attr("cx", d.x = d3.event.x).attr("cy", d.y = d3.event.y);
   }
   
   function renderAreas() {
-    const colunas = window.d3.select("svg")
+    const colunas = window.d3.select(".svg-container")
       .append("g").selectAll("g.area")
       .data(COLUNAS_ETAPAS)
       .enter()
@@ -374,23 +382,9 @@
     tree = window.d3.tree()
       .size([height, width]);
 
-    svg = window.d3.select("svg")
+    svg = window.d3.select(".svg-container")
       .append("g")
       .attr("transform", "translate(0," + margin.top + ")");
-
-    /* svg.append("svg:defs").selectAll("marker")
-      .data([renderOptions.upsaleMarkerClass, renderOptions.downsaleMarkerClass])
-        .enter().append("svg:marker")
-        .attr("id", String)
-        .attr("class", String)
-        .attr("viewBox", renderOptions.markerCssStyles.viewBox)
-        .attr("refX", renderOptions.markerCssStyles.refX)
-        .attr("refY", renderOptions.markerCssStyles.refY)
-        .attr("markerWidth", renderOptions.markerCssStyles.markerWidth)
-        .attr("markerHeight", renderOptions.markerCssStyles.markerHeight)
-        .attr("orient", renderOptions.markerCssStyles.orient)
-        .append("svg:path")
-      .attr("d", "M0,-5L10,0L0,5"); */
 
     // Compute the new tree layout.
     var layout = d3.hierarchy(root);
