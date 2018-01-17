@@ -45,8 +45,8 @@
     svg,
     DOWNSALE_TYPE = 'downsale',
     UPSALE_TYPE = 'upsale',
-    SVG_WIDTH = 1500,
-    SVG_HEIGHT = 600,
+    SVG_WIDTH = 1500, // (ETAPAS * COLUNA_WIDTH) + COLUNA_WIDTH / 2
+    SVG_HEIGHT = 900,
     SVG_MARGIN = {top: 20, right: 120, bottom: 20, left: 120},
     MARKER_CLASS_END = '_marker',
     UPSALE_MARKER_CLASS = "upsale",
@@ -59,7 +59,7 @@
     BOTTOM_DIRECTED_LINK_PATH_COORD = 500,
     BOX_WIDTH = 150,
     BOX_HEIGHT = 60,
-    COLUNA_WIDTH = 300,
+    COLUNA_WIDTH = 300, // BOX_WIDTH + (BOX_WIDTH / 2)
     MARKER_CSS_STYLES = {
       viewBox: '0 -5 10 10',
       refX: 18,
@@ -201,7 +201,6 @@
 
   function drawLinks(links, nodes) {
     var diagonal = function(d) {
-      console.log('diagonal', d)
       return "M" + (d.source.y + BOX_WIDTH + ( COLUNA_WIDTH * 0.25 )) + "," + (d.source.x + (BOX_HEIGHT / 2))
         + "C" + (d.source.y + d.target.y) / 2 + "," + d.source.x
         + " " + (d.source.y + d.target.y) / 2 + "," + d.target.x
@@ -209,7 +208,6 @@
     };
 
     var diagonal2 = function(d) {
-      console.log('diagonal', d)
       return "M" + (d.source.y + BOX_WIDTH + ( COLUNA_WIDTH * 0.25 )) + "," + (d.source.x + (BOX_HEIGHT / 2))
         + "Q" + (((d.source.y + d.target.y) / 2) + BOX_WIDTH / 2) + " " + d.source.x
         + ", " + (d.target.y + ( COLUNA_WIDTH * 0.25 )) + "," + (d.target.x + (BOX_HEIGHT / 2));
@@ -319,24 +317,25 @@
   }
 
   function renderSVG() {
-    var margin = renderOptions.svgMargin,
+    const margin = renderOptions.svgMargin,
       width = renderOptions.svgWidth - margin.right - margin.left,
       height = renderOptions.svgHeight - margin.top - margin.bottom;
+
+    const zoomed = (d) => {
+      const zoomContainer = window.d3.select(".svg-container");
+      zoomContainer.attr("transform", d3.event.transform);
+    }
 
     window.d3.select(".graph-container").append("svg")
       .attr("width", width + margin.right + margin.left)
       .attr("height", SVG_HEIGHT + margin.top)
-      .attr("transform", "translate(0, 25)")
       .append("g")
-        .attr("class", "svg-container")        
-        .call(d3.drag().on("drag", dragged));
+        .attr("class", "zoom-container")
+        .call(d3.zoom().scaleExtent([1 / 2, 4]).on("zoom", zoomed))
+      .append("g")
+        .attr("class", "svg-container");
   }
 
-  function dragged(d) {
-    console.log('dragged', d)
-    d3.select(this).attr("cx", d.x = d3.event.x).attr("cy", d.y = d3.event.y);
-  }
-  
   function renderAreas() {
     const colunas = window.d3.select(".svg-container")
       .append("g").selectAll("g.area")
@@ -543,8 +542,8 @@
     });
   }
 
+  //renderTest();
   renderSVG();
   renderAreas();
   renderTree(generateTree(linksData), nodeClickHandler);
-
 }());
