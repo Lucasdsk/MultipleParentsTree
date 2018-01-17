@@ -1,4 +1,17 @@
 (function () {
+
+  /* 
+    Dados Lote:
+
+    -------------------------------------------------------------------------------------------------
+    |   Tipo: Adega de Pressão                              Ponto Produtivo: Tanque de Pressão 08   |
+    |   Lote: 2017 - 2906                                   Resultante: ADP - Skol RET              |
+    |   Linha: Adega de Pressão TP - L 1                    Situação: Fechado                       |
+    |   Período: 12/10/2017 05:34 até 12/10/2017 11:59                                              |
+    -------------------------------------------------------------------------------------------------
+  */
+
+
   var ETAPAS = {
     MATURACAO: 4,
     FILTRACAO: 3,
@@ -45,8 +58,6 @@
     svg,
     DOWNSALE_TYPE = 'downsale',
     UPSALE_TYPE = 'upsale',
-    SVG_WIDTH = 1500, // (ETAPAS * COLUNA_WIDTH) + COLUNA_WIDTH / 2
-    SVG_HEIGHT = 900,
     SVG_MARGIN = {top: 20, right: 120, bottom: 20, left: 120},
     MARKER_CLASS_END = '_marker',
     UPSALE_MARKER_CLASS = "upsale",
@@ -54,12 +65,14 @@
     CLASS_TO_HIDE_ELEMENT = 'hidden',
     LINK_CLASS = 'link',
     NODE_CLASS = 'node',
-    SPACE_BETWEEN_DEPTH_LEVELS = 300,
+    BOX_WIDTH = 160,
+    BOX_HEIGHT = 60,
+    COLUNA_WIDTH = BOX_WIDTH + (BOX_WIDTH / 2), // BOX_WIDTH + (BOX_WIDTH / 2)
+    SVG_WIDTH = (Object.keys(ETAPAS).length * COLUNA_WIDTH) + COLUNA_WIDTH / 2, // (ETAPAS * COLUNA_WIDTH) + COLUNA_WIDTH / 2
+    SVG_HEIGHT = 900,
+    SPACE_BETWEEN_DEPTH_LEVELS = COLUNA_WIDTH,
     TOP_DIRECTED_LINK_PATH_COORD = 0,
     BOTTOM_DIRECTED_LINK_PATH_COORD = 500,
-    BOX_WIDTH = 150,
-    BOX_HEIGHT = 60,
-    COLUNA_WIDTH = 300, // BOX_WIDTH + (BOX_WIDTH / 2)
     MARKER_CSS_STYLES = {
       viewBox: '0 -5 10 10',
       refX: 18,
@@ -195,22 +208,22 @@
         return d.data.type;
       })
       .attr("transform", function (d) {
-        return "translate(" + (/* renderOptions.svgHeight -  */d.y + ( COLUNA_WIDTH * 0.25 )) + "," + d.x + ")";
+        return "translate(" + (/* renderOptions.svgHeight -  */d.y + ( BOX_WIDTH * 0.25 )) + "," + d.x + ")";
       });
   }
 
   function drawLinks(links, nodes) {
     var diagonal = function(d) {
-      return "M" + (d.source.y + BOX_WIDTH + ( COLUNA_WIDTH * 0.25 )) + "," + (d.source.x + (BOX_HEIGHT / 2))
+      return "M" + (d.source.y + BOX_WIDTH + ( BOX_WIDTH * 0.25 )) + "," + (d.source.x + (BOX_HEIGHT / 2))
         + "C" + (d.source.y + d.target.y) / 2 + "," + d.source.x
         + " " + (d.source.y + d.target.y) / 2 + "," + d.target.x
-        + " " + (d.target.y + ( COLUNA_WIDTH * 0.25 )) + "," + (d.target.x + (BOX_HEIGHT / 2));
+        + " " + (d.target.y + ( BOX_WIDTH * 0.25 )) + "," + (d.target.x + (BOX_HEIGHT / 2));
     };
 
     var diagonal2 = function(d) {
-      return "M" + (d.source.y + BOX_WIDTH + ( COLUNA_WIDTH * 0.25 )) + "," + (d.source.x + (BOX_HEIGHT / 2))
+      return "M" + (d.source.y + BOX_WIDTH + ( BOX_WIDTH * 0.25 )) + "," + (d.source.x + (BOX_HEIGHT / 2))
         + "Q" + (((d.source.y + d.target.y) / 2) + BOX_WIDTH / 2) + " " + d.source.x
-        + ", " + (d.target.y + ( COLUNA_WIDTH * 0.25 )) + "," + (d.target.x + (BOX_HEIGHT / 2));
+        + ", " + (d.target.y + ( BOX_WIDTH * 0.25 )) + "," + (d.target.x + (BOX_HEIGHT / 2));
     };
 
     var link,
