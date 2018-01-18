@@ -14,9 +14,9 @@
   cursor: pointer;
 }
 
-.graph-container .node:hover text {
+/* .graph-container .node:hover text {
   font-size: 1em;
-}
+} */
 
 .graph-container .node:hover circle {
   r: 12;

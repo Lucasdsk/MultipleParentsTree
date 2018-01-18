@@ -11,7 +11,6 @@
     -------------------------------------------------------------------------------------------------
   */
 
-
   var ETAPAS = {
     MATURACAO: 4,
     FILTRACAO: 3,
@@ -42,18 +41,360 @@
     }
   ];
   var linksData = [
-    { "product_id": 1, "name": "A - FINAL", "etapa": ETAPAS.FINAL, "parents_id": null},
-    { "product_id": 2, "name": "B - ADEGA", "etapa": ETAPAS.ADEGA, "parents_id": [{id: 1, "type": "upsale"}]},
-    { "product_id": 3, "name": "C - ADEGA", "etapa": ETAPAS.ADEGA, "alert": true, "parents_id": [{id: 1, "type": "upsale"}] },
-    { "product_id": 4, "name": "D - ADEGA", "etapa": ETAPAS.ADEGA, "parents_id": [{id: 1, "type": "downsale"}]},
-    { "product_id": 5, "name": "E - ADEGA", "etapa": ETAPAS.ADEGA, "parents_id": [{id: 1, "type": "downsale"}]},
-    { "product_id": 6, "name": "F - ASSEPSIA", "etapa": ETAPAS.ASSEPSIA, "parents_id": [{id: 2, "type": "downsale"}]},
-    { "product_id": 7, "name": "G - ASSEPSIA", "etapa": ETAPAS.ASSEPSIA, "parents_id": [{id: 3, "type": "downsale"}]},
-    { "product_id": 8, "name": "H - FILTRACAO", "etapa": ETAPAS.FILTRACAO, "parents_id": [{id: 2, "type": "upsale"}, {id: 3, "type": "downsale"}]},
-    { "product_id": 9, "name": "I - MATURACAO", "etapa": ETAPAS.MATURACAO, "parents_id": [{id: 8, "type": "downsale"}]},
-    { "product_id": 10, "name": "J - MATURACAO","etapa": ETAPAS.MATURACAO, "parents_id": [{id: 8, "type": "downsale"}]},
-    { "product_id": 11, "name": "K - MATURACAO","etapa": ETAPAS.MATURACAO, "parents_id": [{id: 7, "type": "upsale"}]}
-  ],
+    {
+      product_id: 1,
+      name: "A - FINAL",
+      etapa: ETAPAS.FINAL,
+      parents_id: null,
+      lot_information: [
+        {
+          label: "Tipo",
+          info: "Adega de Pressão - A"
+        },
+        {
+          label: "Lote",
+          info: "2017 - 2906"
+        },
+        {
+          label: "Resultante",
+          info: "ADP - Skol RET"
+        },
+        {
+          label: "Linha",
+          info: "Adega de Pressão TP - L 1"
+        },
+        {
+          label: "Situação",
+          info: "Fechado"
+        },
+        {
+          label: "Período",
+          info: "12/10/2017 05:34 até 12/10/2017 11:59"
+        }
+      ]
+    },
+    {
+      product_id: 2,
+      name: "B - ADEGA",
+      etapa: ETAPAS.ADEGA,
+      parents_id: [{ id: 1, type: "upsale" }],
+      lot_information: [
+        {
+          label: "Tipo",
+          info: "Adega de Pressão - B"
+        },
+        {
+          label: "Lote",
+          info: "2017 - 2906"
+        },
+        {
+          label: "Resultante",
+          info: "ADP - Skol RET"
+        },
+        {
+          label: "Linha",
+          info: "Adega de Pressão TP - L 1"
+        },
+        {
+          label: "Situação",
+          info: "Fechado"
+        },
+        {
+          label: "Período",
+          info: "12/10/2017 05:34 até 12/10/2017 11:59"
+        }
+      ]
+    },
+    {
+      product_id: 3,
+      name: "C - ADEGA",
+      etapa: ETAPAS.ADEGA,
+      alert: true,
+      parents_id: [{ id: 1, type: "upsale" }],
+      lot_information: [
+        {
+          label: "Tipo",
+          info: "Adega de Pressão - C"
+        },
+        {
+          label: "Lote",
+          info: "2017 - 2906"
+        },
+        {
+          label: "Resultante",
+          info: "ADP - Skol RET"
+        },
+        {
+          label: "Linha",
+          info: "Adega de Pressão TP - L 1"
+        },
+        {
+          label: "Situação",
+          info: "Fechado"
+        },
+        {
+          label: "Período",
+          info: "12/10/2017 05:34 até 12/10/2017 11:59"
+        }
+      ]
+    },
+    {
+      product_id: 4,
+      name: "D - ADEGA",
+      etapa: ETAPAS.ADEGA,
+      parents_id: [{ id: 1, type: "downsale" }],
+      lot_information: [
+        {
+          label: "Tipo",
+          info: "Adega de Pressão - D"
+        },
+        {
+          label: "Lote",
+          info: "2017 - 2906"
+        },
+        {
+          label: "Resultante",
+          info: "ADP - Skol RET"
+        },
+        {
+          label: "Linha",
+          info: "Adega de Pressão TP - L 1"
+        },
+        {
+          label: "Situação",
+          info: "Fechado"
+        },
+        {
+          label: "Período",
+          info: "12/10/2017 05:34 até 12/10/2017 11:59"
+        }
+      ]
+    },
+    {
+      product_id: 5,
+      name: "E - ADEGA",
+      etapa: ETAPAS.ADEGA,
+      parents_id: [{ id: 1, type: "downsale" }],
+      lot_information: [
+        {
+          label: "Tipo",
+          info: "Adega de Pressão - E"
+        },
+        {
+          label: "Lote",
+          info: "2017 - 2906"
+        },
+        {
+          label: "Resultante",
+          info: "ADP - Skol RET"
+        },
+        {
+          label: "Linha",
+          info: "Adega de Pressão TP - L 1"
+        },
+        {
+          label: "Situação",
+          info: "Fechado"
+        },
+        {
+          label: "Período",
+          info: "12/10/2017 05:34 até 12/10/2017 11:59"
+        }
+      ]
+    },
+    {
+      product_id: 6,
+      name: "F - ASSEPSIA",
+      etapa: ETAPAS.ASSEPSIA,
+      parents_id: [{ id: 2, type: "downsale" }],
+      lot_information: [
+        {
+          label: "Tipo",
+          info: "Adega de Pressão - F"
+        },
+        {
+          label: "Lote",
+          info: "2017 - 2906"
+        },
+        {
+          label: "Resultante",
+          info: "ADP - Skol RET"
+        },
+        {
+          label: "Linha",
+          info: "Adega de Pressão TP - L 1"
+        },
+        {
+          label: "Situação",
+          info: "Fechado"
+        },
+        {
+          label: "Período",
+          info: "12/10/2017 05:34 até 12/10/2017 11:59"
+        }
+      ]
+    },
+    {
+      product_id: 7,
+      name: "G - ASSEPSIA",
+      etapa: ETAPAS.ASSEPSIA,
+      parents_id: [{ id: 3, type: "downsale" }],
+      lot_information: [
+        {
+          label: "Tipo",
+          info: "Adega de Pressão - G"
+        },
+        {
+          label: "Lote",
+          info: "2017 - 2906"
+        },
+        {
+          label: "Resultante",
+          info: "ADP - Skol RET"
+        },
+        {
+          label: "Linha",
+          info: "Adega de Pressão TP - L 1"
+        },
+        {
+          label: "Situação",
+          info: "Fechado"
+        },
+        {
+          label: "Período",
+          info: "12/10/2017 05:34 até 12/10/2017 11:59"
+        }
+      ]
+    },
+    {
+      product_id: 8,
+      name: "H - FILTRACAO",
+      etapa: ETAPAS.FILTRACAO,
+      parents_id: [{ id: 2, type: "upsale" }, { id: 3, type: "downsale" }],
+      lot_information: [
+        {
+          label: "Tipo",
+          info: "Adega de Pressão - H"
+        },
+        {
+          label: "Lote",
+          info: "2017 - 2906"
+        },
+        {
+          label: "Resultante",
+          info: "ADP - Skol RET"
+        },
+        {
+          label: "Linha",
+          info: "Adega de Pressão TP - L 1"
+        },
+        {
+          label: "Situação",
+          info: "Fechado"
+        },
+        {
+          label: "Período",
+          info: "12/10/2017 05:34 até 12/10/2017 11:59"
+        }
+      ]
+    },
+    {
+      product_id: 9,
+      name: "I - MATURACAO",
+      etapa: ETAPAS.MATURACAO,
+      parents_id: [{ id: 8, type: "downsale" }],
+      lot_information: [
+        {
+          label: "Tipo",
+          info: "Adega de Pressão - I"
+        },
+        {
+          label: "Lote",
+          info: "2017 - 2906"
+        },
+        {
+          label: "Resultante",
+          info: "ADP - Skol RET"
+        },
+        {
+          label: "Linha",
+          info: "Adega de Pressão TP - L 1"
+        },
+        {
+          label: "Situação",
+          info: "Fechado"
+        },
+        {
+          label: "Período",
+          info: "12/10/2017 05:34 até 12/10/2017 11:59"
+        }
+      ]
+    },
+    {
+      product_id: 10,
+      name: "J - MATURACAO",
+      etapa: ETAPAS.MATURACAO,
+      parents_id: [{ id: 8, type: "downsale" }],
+      lot_information: [
+        {
+          label: "Tipo",
+          info: "Adega de Pressão - J"
+        },
+        {
+          label: "Lote",
+          info: "2017 - 2906"
+        },
+        {
+          label: "Resultante",
+          info: "ADP - Skol RET"
+        },
+        {
+          label: "Linha",
+          info: "Adega de Pressão TP - L 1"
+        },
+        {
+          label: "Situação",
+          info: "Fechado"
+        },
+        {
+          label: "Período",
+          info: "12/10/2017 05:34 até 12/10/2017 11:59"
+        }
+      ]
+    },
+    {
+      product_id: 11,
+      name: "K - MATURACAO",
+      etapa: ETAPAS.MATURACAO,
+      parents_id: [{ id: 7, type: "upsale" }],
+      lot_information: [
+        {
+          label: "Tipo",
+          info: "Adega de Pressão - K"
+        },
+        {
+          label: "Lote",
+          info: "2017 - 2906"
+        },
+        {
+          label: "Resultante",
+          info: "ADP - Skol RET"
+        },
+        {
+          label: "Linha",
+          info: "Adega de Pressão TP - L 1"
+        },
+        {
+          label: "Situação",
+          info: "Fechado"
+        },
+        {
+          label: "Período",
+          info: "12/10/2017 05:34 até 12/10/2017 11:59"
+        }
+      ]
+    }
+  ],  
     $productsSelect = $('select.products-select'),
     svg,
     DOWNSALE_TYPE = 'downsale',
@@ -65,11 +406,11 @@
     CLASS_TO_HIDE_ELEMENT = 'hidden',
     LINK_CLASS = 'link',
     NODE_CLASS = 'node',
-    BOX_WIDTH = 160,
-    BOX_HEIGHT = 60,
+    BOX_WIDTH = 500,
+    BOX_HEIGHT = 180,
     COLUNA_WIDTH = BOX_WIDTH + (BOX_WIDTH / 2), // BOX_WIDTH + (BOX_WIDTH / 2)
     SVG_WIDTH = (Object.keys(ETAPAS).length * COLUNA_WIDTH) + COLUNA_WIDTH / 2, // (ETAPAS * COLUNA_WIDTH) + COLUNA_WIDTH / 2
-    SVG_HEIGHT = 900,
+    SVG_HEIGHT = 2000,
     SPACE_BETWEEN_DEPTH_LEVELS = COLUNA_WIDTH,
     TOP_DIRECTED_LINK_PATH_COORD = 0,
     BOTTOM_DIRECTED_LINK_PATH_COORD = 500,
@@ -256,7 +597,6 @@
         return "url(#" + d.target.data.type + renderOptions.markerClassEnd + ")";
       });
 
-
     maxTargetsCount = 0;
 
     //Adding links in case when it is several parents for one node
@@ -344,7 +684,7 @@
       .attr("height", SVG_HEIGHT + margin.top)
       .append("g")
         .attr("class", "zoom-container")
-        .call(d3.zoom().scaleExtent([1 / 2, 4]).on("zoom", zoomed))
+        .call(d3.zoom().scaleExtent([1 / 4, 4]).on("zoom", zoomed))
       .append("g")
         .attr("class", "svg-container");
   }
@@ -356,7 +696,7 @@
       .enter()
       .append("g").attr("class", "area")
       .attr("transform", (d) => {
-        return `translate(${d.order * COLUNA_WIDTH}, ${0})`;
+        return `translate(${d.order * COLUNA_WIDTH}, 0)`;
       });
 
     colunas.append("rect")
@@ -370,13 +710,14 @@
     
     tituloColuna.append("rect")
       .attr("width", COLUNA_WIDTH - 1)
-      .attr("height", 25)
+      .attr("height", 40)
       .attr("fill", "#6ba4dc");
 
     tituloColuna.append("text")
       .attr("class", "column-title")
       .attr("x", 10)
-      .attr("y", 18)
+      .attr("y", 25)
+      .attr("style", "font-size: 1.5em")
       .text((d) => d.description);
   }
 
@@ -458,15 +799,23 @@
       })
       .attr("stroke-width", 1);
 
-    nodeGroup.append("text")
-      .attr("x", function (d) {
-        /*jslint nomen: true*/
-        return d.children || d._children ? renderOptions.circleCssStyles.text.right : renderOptions.circleCssStyles.text.left;
-      })
-      .attr("dy", renderOptions.circleCssStyles.text.dy)
-      .attr("text-anchor", "start")
-      .text(function (d) { return d.data.name; })
-      .style("fill-opacity", renderOptions.circleCssStyles.fillOpacity);
+    const text = nodeGroup
+      .append("g")
+      .selectAll("text")
+        .data((d) => d.data.lot_information)
+        .enter()
+        .append("text")
+          .attr("x", 10)
+          .attr("y", (d,i) => 30 + 25 * i)
+          .attr("style", "font-size: 1.5em");
+
+    text.append("tspan")
+      .attr("style", "font-weight: bold")
+      .text(d => `${d.label}:`);
+
+    text.append("tspan")
+      .attr("dx", 5)
+      .text(d => d.info);
 
     drawLinks(links, nodes);
 
