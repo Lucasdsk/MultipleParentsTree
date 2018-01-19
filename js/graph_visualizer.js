@@ -9,6 +9,9 @@
     |   Linha: Adega de Pressão TP - L 1                    Situação: Fechado                       |
     |   Período: 12/10/2017 05:34 até 12/10/2017 11:59                                              |
     -------------------------------------------------------------------------------------------------
+
+    TODO: Deixar a árvore com atura dinâmica, de acordo com a quantidade de nós
+    TODO: Fazer a altura das colunas se adaptarem à altura da árvore
   */
 
   var ETAPAS = {
@@ -395,15 +398,13 @@
       ]
     }
   ],  
-    $productsSelect = $('select.products-select'),
     svg,
     DOWNSALE_TYPE = 'downsale',
     UPSALE_TYPE = 'upsale',
-    SVG_MARGIN = {top: 20, right: 120, bottom: 20, left: 120},
+    // SVG_MARGIN = {top: 20, right: 120, bottom: 20, left: 120},
     MARKER_CLASS_END = '_marker',
     UPSALE_MARKER_CLASS = "upsale",
     DOWNSALE_MARKER_CLASS =  "downsale",
-    CLASS_TO_HIDE_ELEMENT = 'hidden',
     LINK_CLASS = 'link',
     NODE_CLASS = 'node',
     BOX_WIDTH = 500,
@@ -414,45 +415,18 @@
     SPACE_BETWEEN_DEPTH_LEVELS = COLUNA_WIDTH,
     TOP_DIRECTED_LINK_PATH_COORD = 0,
     BOTTOM_DIRECTED_LINK_PATH_COORD = 500,
-    MARKER_CSS_STYLES = {
-      viewBox: '0 -5 10 10',
-      refX: 18,
-      refY: 0,
-      markerWidth: 6,
-      markerHeight: 6,
-      orient: 'auto'
-    },
-    CIRCLE_CSS_STYLES = {
-      r: 10,
-      fill: '#fff',
-      fillOpacity: 1,
-      text: {
-        dy: '-1em',
-        dx: {
-          left: '13px',
-          right: '-13px;'
-        }
-      }
-    },
     renderOptions = {
       svgWidth: SVG_WIDTH,
       svgHeight: SVG_HEIGHT,
-      svgMargin: SVG_MARGIN,
+      // svgMargin: SVG_MARGIN,
       classes: {
-        classToHideElement: CLASS_TO_HIDE_ELEMENT,
         linkClass: LINK_CLASS,
         nodeClass: NODE_CLASS
       },
       spaceBetweenDepthLevels: SPACE_BETWEEN_DEPTH_LEVELS,
       topDirectedLinkPathCoord: TOP_DIRECTED_LINK_PATH_COORD,
       bottomDirectedLinkPathCoord: BOTTOM_DIRECTED_LINK_PATH_COORD,
-
       markerClassEnd: MARKER_CLASS_END,
-      upsaleMarkerClass: UPSALE_MARKER_CLASS + MARKER_CLASS_END,
-      downsaleMarkerClass: DOWNSALE_MARKER_CLASS + MARKER_CLASS_END,
-      markerCssStyles: MARKER_CSS_STYLES,
-
-      circleCssStyles: CIRCLE_CSS_STYLES
     };
 
   function GraphLink(params) {
@@ -471,12 +445,14 @@
       type: params.type || UPSALE_TYPE
     };
   }
+
   function reduceArray(arr) {
     return arr.reduce(function (map, item) {
       map[item.product_id] =  item;
       return map;
     }, {});
   }
+
   function reduceArrayNode(arr) {
     return arr.reduce(function (map, item) {
       map[item.data.product_id] =  item;
@@ -530,13 +506,7 @@
           return d.id;
         });
     return node.enter().append("g")
-      .attr("class", function (d) {
-        var nodeClasses = renderOptions.classes.nodeClass;
-        if (d.hidden) {
-          nodeClasses += ' ' + renderOptions.classes.classToHideElement;
-        }
-        return nodeClasses;
-      })
+      .attr("class", renderOptions.classes.nodeClass)
       .attr("data-index", function (d) {
         return d.data.index;
       })
@@ -578,18 +548,7 @@
         return d.target.id;
       });
     link.enter().insert("path", "g")
-      .attr("class", function (d) {
-        var linkClasses = renderOptions.classes.linkClass + " " + d.target.data.type;
-        if (d.source.data_targets_id) {
-          targets = d.source.data_targets_id;
-          targets.forEach(function (currentTarget) {
-            if (currentTarget.data.type === d.target.data.type) {
-              linkClasses += ' ' + renderOptions.classes.classToHideElement;
-            }
-          });
-        }
-        return linkClasses;
-      })
+      .attr("class", (d) => `${renderOptions.classes.linkClass} ${d.target.data.type}`)
       .attr("d", function (d) {
         return diagonal2(d);
       })
@@ -670,9 +629,9 @@
   }
 
   function renderSVG() {
-    const margin = renderOptions.svgMargin,
+    /* const margin = renderOptions.svgMargin,
       width = renderOptions.svgWidth - margin.right - margin.left,
-      height = renderOptions.svgHeight - margin.top - margin.bottom;
+      height = renderOptions.svgHeight - margin.top - margin.bottom; */
 
     const zoomed = (d) => {
       const zoomContainer = window.d3.select(".svg-container");
@@ -680,8 +639,8 @@
     }
 
     window.d3.select(".graph-container").append("svg")
-      .attr("width", width + margin.right + margin.left)
-      .attr("height", SVG_HEIGHT + margin.top)
+      .attr("width", renderOptions.svgWidth)
+      .attr("height", renderOptions.svgHeight)
       .append("g")
         .attr("class", "zoom-container")
         .call(d3.zoom().scaleExtent([1 / 4, 4]).on("zoom", zoomed))
@@ -701,7 +660,7 @@
 
     colunas.append("rect")
       .attr("width", COLUNA_WIDTH)
-      .attr("height", SVG_HEIGHT + SVG_MARGIN.top)
+      .attr("height", SVG_HEIGHT)
       .attr("fill", "transparent")
       .attr("stroke", "#000")
       .attr("stroke-width", 1);
@@ -721,10 +680,9 @@
       .text((d) => d.description);
   }
 
-  function renderTree(root, nodeClickHandler) {
-    var margin = renderOptions.svgMargin,
-      width = renderOptions.svgWidth - margin.right - margin.left,
-      height = renderOptions.svgHeight - margin.top - margin.bottom,
+  function renderTree(root) {
+    var width = renderOptions.svgWidth,
+      height = renderOptions.svgHeight,
       tree,
       nodes,
       nodeGroup,
@@ -734,10 +692,9 @@
 
     tree = window.d3.tree()
       .size([height, width]);
+      //.nodeSize([BOX_HEIGHT, BOX_WIDTH]);
 
-    svg = window.d3.select(".svg-container")
-      .append("g")
-      .attr("transform", "translate(0," + margin.top + ")");
+    svg = window.d3.select(".svg-container").append("g");
 
     // Compute the new tree layout.
     var layout = d3.hierarchy(root);
@@ -766,8 +723,8 @@
 
     function addFixedDepth() {
       nodes.forEach(function (d) {
-        if (d.data_targets_id) {
-          var targets = d.data_targets_id;
+        if (d.data.data_targets_id) {
+          var targets = d.data.data_targets_id;
           targets.forEach(function (currentTarget) {
             var target = nodesMap[currentTarget.id],
               source = d;
@@ -819,93 +776,10 @@
 
     drawLinks(links, nodes);
 
-    $('.' + renderOptions.classes.nodeClass).on('click', nodeClickHandler);
-  }
-
-  function changeGraphLink(param) {
-    var removedProductId,
-      productIsDuplicated,
-      newGraphLink;
-    if (param.index !== undefined) {
-      removedProductId = linksData[param.index].product_id;
-      linksData[param.index].name = param.productToPaste.name;
-      linksData[param.index].product_id = param.productToPaste.product_id;
-      //Save previous product relations
-      linksData.forEach(function (item) {
-        if (item.parents_id) {
-          item.parents_id.forEach(function (parentItem, index) {
-            if (parentItem.id === removedProductId) {
-              item.parents_id[index].id = param.productToPaste.product_id;
-            }
-          });
-        }
-      });
-    } else {
-      productIsDuplicated = false;
-      linksData.forEach(function (item) {
-        if (item.product_id === param.productToPaste.product_id) {
-          item.parents_id.push({id: linksData[param.parentIndex].product_id, type: param.type});
-          productIsDuplicated = true;
-        }
-      });
-      if (!productIsDuplicated) {
-        newGraphLink = new GraphLink({
-          parents_id: [{id: linksData[param.parentIndex].product_id, type: param.type}],
-          name: param.productToPaste.name,
-          product_id: param.productToPaste.product_id
-        });
-        linksData.push(newGraphLink);
-      }
-    }
-  }
-
-  function nodeClickHandler() {
-    var $target = $(this),
-      template = app.productsSelectOptions,
-      clickedNodeIndex = $target.data('index'),
-      clickedNodeParentIndex = $target.data('parent-index'),
-      clickedNodeType = $target.data('type'),
-      productsFromSelect;
-    //if (clickedNodeIndex) {
-    //  dataToRender[clickedNodeIndex].selected = true;
-    //}
-    productsFromSelect = [{"name": "NewProduct1", product_id: 101},
-      {"name": "NewProduct2", product_id: 102},
-      {"name": "NewProduct3", product_id: 103},
-      {"name": "NewProduct4", product_id: 104},
-      {"name": "NewProduct5", product_id: 105},
-      {"name": "NewProduct6", product_id: 106},
-      {"name": "NewProduct7", product_id: 107},
-      {"name": "NewProduct8", product_id: 108}];
-    productsFromSelect.forEach(function (item, index) {
-      item.index = index;
-    });
-
-    $productsSelect.html(Mustache.to_html(template, {data: productsFromSelect}));
-    $productsSelect.select2();
-    $('.funnel-modal').modal('toggle');
-
-    function redrawGraph() {
-      $('svg').remove();
-      svg = null;
-      renderTree(generateTree(linksData), nodeClickHandler);
-    }
-
-    $('.save-selected-product').off('click').on('click', function () {
-      $('.funnel-modal').modal('toggle');
-      var selectedProductIndex = +$productsSelect.val();
-      changeGraphLink({
-        index: clickedNodeIndex,
-        parentIndex: clickedNodeParentIndex,
-        type: clickedNodeType,
-        productToPaste: productsFromSelect[selectedProductIndex]
-      });
-      redrawGraph();
-    });
   }
 
   //renderTest();
   renderSVG();
   renderAreas();
-  renderTree(generateTree(linksData), nodeClickHandler);
+  renderTree(generateTree(linksData));
 }());
