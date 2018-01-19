@@ -1,7 +1,8 @@
+
 /*
-import config from "./config";
-import GraphLink from "./GraphLink";
-import Node from "./Node";
+TODO: Deixar a árvore com atura dinâmica, de acordo com a quantidade de nós
+TODO: Fazer a altura das colunas se adaptarem à altura da árvore
+TODO: botões nos quadros
 */
 
 class GraphVisualizer {
@@ -14,8 +15,12 @@ class GraphVisualizer {
   init() {
     console.log("init");
     this.renderSVG();
-    this.renderAreas();
     this.renderTree(this.generateTree(linksData));
+    this.renderAreas();
+  }
+
+  onClickEvent(d) {
+    console.log('onClickEvent', d)
   }
 
   reduceArray(arr) {
@@ -90,19 +95,20 @@ class GraphVisualizer {
         }
       })
       .attr("data-type", d => d.data.type)
-      .attr("transform", d => `translate(${d.y + this.config.renderOptions.boxWidth * 0.25}, ${d.x})`);
+      .attr("transform", d => `translate(${d.y + this.config.renderOptions.boxWidth * 0.25}, ${d.x})`)
+      .on("click", this.onClickEvent);
   }
 
   drawLinks(links, nodes) {
     const { boxWidth, boxHeight } = this.config.renderOptions;
 
-    const diagonal = d =>
+    const diagonalMultipleParent = d =>
       `M${d.source.y + boxWidth + boxWidth * 0.25}, ${d.source.x + boxHeight / 2}` +
       `C${(d.source.y + d.target.y) / 2},${d.source.x} ` +
       `${(d.source.y + d.target.y) / 2},${d.target.x} ` +
       `${d.target.y + boxWidth * 0.25},${d.target.x + boxHeight / 2}`;
 
-    const diagonal2 = d =>
+    const diagonal = d =>
       `M${d.source.y + boxHeight + boxHeight * 0.25},${d.source.x + boxHeight / 2}` +
       `Q${(d.source.y + d.target.y) / 2 + boxHeight / 2} ${d.source.x}, ` +
       `${d.target.y + boxWidth * 0.25},${d.target.x + boxHeight / 2}`;
@@ -119,11 +125,7 @@ class GraphVisualizer {
         "class",
         d => `${this.config.renderOptions.classes.linkClass} ${d.target.data.type}`
       )
-      .attr("d", diagonal2)
-      .attr(
-        "marker-end",
-        d => `url(#${d.target.data.type}${this.config.renderOptions.markerClassEnd})`
-      );
+      .attr("d", diagonal);
 
     //Adding links in case when it is several parents for one node
     const addSpecialParent = position => {
@@ -147,7 +149,7 @@ class GraphVisualizer {
             }
 
             //Conputing to which direction will be directed bezier link: top or bottom
-            const path = diagonal(d);
+            const path = diagonalMultipleParent(d);
             const pathDigitsMas = path.match(/([0-9\.])+/g);
             const pathDigitsAndSpacesMas = path.match(/([A-Za-z0-9_ \.])+/g);
 
@@ -179,15 +181,6 @@ class GraphVisualizer {
               } dd`;
             }
           }
-        })
-        .attr("marker-end", d => {
-          if (d.source.data.data_targets_id) {
-            targets = d.source.data.data_targets_id;
-            if (position < targets.length) {
-              return `url(#${targets[position].type +
-                this.config.renderOptions.markerClassEnd})`;
-            }
-          }
         });
     };
 
@@ -197,13 +190,13 @@ class GraphVisualizer {
     }
   }
 
-  renderSVG() {    
+  renderSVG() {
     const zoomed = d => {
       const zoomContainer = window.d3.select(".svg-container");
       zoomContainer.attr("transform", d3.event.transform);
     };
 
-    window.d3
+    this.svg = window.d3
       .select(".graph-container")
       .append("svg")
       .attr("width", this.config.renderOptions.svgWidth)
@@ -221,6 +214,7 @@ class GraphVisualizer {
   }
 
   renderAreas() {
+
     const colunas = window.d3
       .select(".svg-container")
       .append("g")
@@ -260,31 +254,19 @@ class GraphVisualizer {
   }
 
   renderTree(root) {
-    const width = this.config.renderOptions.svgWidth,
-      height = this.config.renderOptions.svgHeight;
-
+    const width = this.config.renderOptions.svgWidth;
+    const height = this.config.renderOptions.svgHeight;
     const tree = window.d3.tree().size([height, width]);
-    this.svg = window.d3.select(".svg-container").append("g");
+    // const tree = window.d3.tree().nodeSize([this.config.renderOptions.boxHeight, this.config.renderOptions.boxHeight]);
+    // this.svg = window.d3.select(".svg-container").append("g");
 
     // Compute the new tree layout.
     const layout = d3.hierarchy(root);
-    const nodes = layout.descendants().reverse();
+    const nodes = layout.descendants();
     const links = layout.links();
     const nodesMap = this.reduceArray(nodes);
     tree(layout);
     
-    const replaceNodeAndChildren = (node, root, distance) => {
-      if (node.children) {
-        node.children.forEach(child =>
-          replaceNodeAndChildren(child, root, distance)
-        );
-      }
-      node.y =
-        (distance + (node.depth - root.depth)) *
-        this.config.renderOptions.spaceBetweenDepthLevels;
-      node.depth = distance + (node.depth - root.depth);
-    };
-
     nodes.forEach(d => {
       d.depth = d.data.etapa;
       d.y = d.depth * this.config.renderOptions.spaceBetweenDepthLevels;

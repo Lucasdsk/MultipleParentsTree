@@ -386,7 +386,6 @@ const linksData = [
 ];
 
 const config = () => {
-  const MARKER_CLASS_END = "_marker";
   const LINK_CLASS = "link";
   const NODE_CLASS = "node";
   const BOX_WIDTH = 500;
@@ -413,7 +412,6 @@ const config = () => {
       spaceBetweenDepthLevels: SPACE_BETWEEN_DEPTH_LEVELS,
       topDirectedLinkPathCoord: TOP_DIRECTED_LINK_PATH_COORD,
       bottomDirectedLinkPathCoord: BOTTOM_DIRECTED_LINK_PATH_COORD,
-      markerClassEnd: MARKER_CLASS_END // possivelmente não está sendo usado, verificar...
     }
   }
 }
