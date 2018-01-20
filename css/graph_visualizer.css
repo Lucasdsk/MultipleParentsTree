@@ -1,5 +1,10 @@
+
+.graph-container .node .button {
+  cursor: pointer;
+}
+
 .graph-container .node text {
-  font-size: 0.9em;
+  font-size: 1.2em;
   transition: font-size ease-in-out 0.2s;
 }
 

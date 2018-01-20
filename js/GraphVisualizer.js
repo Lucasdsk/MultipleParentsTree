@@ -1,4 +1,3 @@
-
 /*
 TODO: Deixar a árvore com atura dinâmica, de acordo com a quantidade de nós
 TODO: Fazer a altura das colunas se adaptarem à altura da árvore
@@ -10,6 +9,10 @@ class GraphVisualizer {
     this.config = config;
     this.columns = columns;
     this.svg = null;
+    this.treeElement = null;
+    this.areasElement = null;
+    this.nodeMoreBelow = null;
+    this.hasButtons = false;
   }
 
   init() {
@@ -19,8 +22,15 @@ class GraphVisualizer {
     this.renderAreas();
   }
 
-  onClickEvent(d) {
-    console.log('onClickEvent', d)
+  showButtons() {
+    console.log("showButtons");
+    this.hasButtons = !this.hasButtons;
+    this.redrawGraph();
+  }
+
+  onClickButton(b) {
+    console.log('onClickButton', b);
+    window.alert(`CLICOUUU ${b.data.name}`);
   }
 
   reduceArray(arr) {
@@ -76,13 +86,15 @@ class GraphVisualizer {
 
   drawNodes(nodes) {
     let i = 0;
-    const node = this.svg.selectAll("g.node").data(nodes, d => {
-      if (!d.id) {
-        i += 1;
-        d.id = i;
-      }
-      return d.id;
-    });
+    const node = this.treeElement
+      .selectAll("g.node")
+      .data(nodes, d => {
+        if (!d.id) {
+          i += 1;
+          d.id = i;
+        }
+        return d.id;
+      });
 
     return node
       .enter()
@@ -95,21 +107,28 @@ class GraphVisualizer {
         }
       })
       .attr("data-type", d => d.data.type)
-      .attr("transform", d => `translate(${d.y + this.config.renderOptions.boxWidth * 0.25}, ${d.x})`)
-      .on("click", this.onClickEvent);
+      .attr(
+        "transform",
+        d =>
+          `translate(${d.y + this.config.renderOptions.boxWidth * 0.25}, ${
+            d.x
+          })`
+      );
   }
 
   drawLinks(links, nodes) {
     const { boxWidth, boxHeight } = this.config.renderOptions;
 
     const diagonalMultipleParent = d =>
-      `M${d.source.y + boxWidth + boxWidth * 0.25}, ${d.source.x + boxHeight / 2}` +
+      `M${d.source.y + boxWidth + boxWidth * 0.25}, ${d.source.x +
+        boxHeight / 2}` +
       `C${(d.source.y + d.target.y) / 2},${d.source.x} ` +
       `${(d.source.y + d.target.y) / 2},${d.target.x} ` +
       `${d.target.y + boxWidth * 0.25},${d.target.x + boxHeight / 2}`;
 
     const diagonal = d =>
-      `M${d.source.y + boxHeight + boxHeight * 0.25},${d.source.x + boxHeight / 2}` +
+      `M${d.source.y + boxHeight + boxHeight * 0.25},${d.source.x +
+        boxHeight / 2}` +
       `Q${(d.source.y + d.target.y) / 2 + boxHeight / 2} ${d.source.x}, ` +
       `${d.target.y + boxWidth * 0.25},${d.target.x + boxHeight / 2}`;
 
@@ -117,13 +136,17 @@ class GraphVisualizer {
     let maxTargetsCount = 0;
     // Drawing links for one parent
     const nodesMap = this.reduceArray(nodes);
-    const link = this.svg.selectAll("path.link").data(links, d => d.target.id);
+    const link = this.svg
+      .select(".tree")
+      .selectAll("path.link")
+      .data(links, d => d.target.id);
     link
       .enter()
       .insert("path", "g")
       .attr(
         "class",
-        d => `${this.config.renderOptions.classes.linkClass} ${d.target.data.type}`
+        d =>
+          `${this.config.renderOptions.classes.linkClass} ${d.target.data.type}`
       )
       .attr("d", diagonal);
 
@@ -158,9 +181,11 @@ class GraphVisualizer {
                 newPath += word;
               } else {
                 if (targets[position].type === this.config.UPSALE_TYPE) {
-                  spaceCoord = this.config.renderOptions.topDirectedLinkPathCoord;
+                  spaceCoord = this.config.renderOptions
+                    .topDirectedLinkPathCoord;
                 } else {
-                  spaceCoord = this.config.renderOptions.bottomDirectedLinkPathCoord;
+                  spaceCoord = this.config.renderOptions
+                    .bottomDirectedLinkPathCoord;
                 }
                 newPath += spaceCoord + " " + pathDigitsMas[6];
               }
@@ -190,34 +215,10 @@ class GraphVisualizer {
     }
   }
 
-  renderSVG() {
-    const zoomed = d => {
-      const zoomContainer = window.d3.select(".svg-container");
-      zoomContainer.attr("transform", d3.event.transform);
-    };
-
-    this.svg = window.d3
-      .select(".graph-container")
-      .append("svg")
-      .attr("width", this.config.renderOptions.svgWidth)
-      .attr("height", this.config.renderOptions.svgHeight)
-      .append("g")
-      .attr("class", "zoom-container")
-      .call(
-        d3
-          .zoom()
-          .scaleExtent([1 / 4, 4])
-          .on("zoom", zoomed)
-      )
-      .append("g")
-      .attr("class", "svg-container");
-  }
-
   renderAreas() {
-
-    const colunas = window.d3
-      .select(".svg-container")
-      .append("g")
+    
+    const colunas =
+      this.areasElement
       .selectAll("g.area")
       .data(this.columns)
       .enter()
@@ -231,7 +232,7 @@ class GraphVisualizer {
     colunas
       .append("rect")
       .attr("width", this.config.renderOptions.colunaWidth)
-      .attr("height", this.config.renderOptions.svgHeight)
+      .attr("height", this.nodeMoreBelow.x + this.config.renderOptions.boxHeight * 1.5)
       .attr("fill", "transparent")
       .attr("stroke", "#000")
       .attr("stroke-width", 1);
@@ -254,11 +255,19 @@ class GraphVisualizer {
   }
 
   renderTree(root) {
-    const width = this.config.renderOptions.svgWidth;
-    const height = this.config.renderOptions.svgHeight;
-    const tree = window.d3.tree().size([height, width]);
-    // const tree = window.d3.tree().nodeSize([this.config.renderOptions.boxHeight, this.config.renderOptions.boxHeight]);
-    // this.svg = window.d3.select(".svg-container").append("g");
+    const {
+      svgWidth,
+      svgHeight,
+      spaceBetweenDepthLevels,
+      boxWidth,
+      boxHeight,
+      button: {
+        width: buttonWidth,
+        height: buttonHeight,
+        margin: buttonMargin
+      }
+    } = this.config.renderOptions;
+    const tree = window.d3.tree().size([svgHeight, svgWidth]);
 
     // Compute the new tree layout.
     const layout = d3.hierarchy(root);
@@ -266,18 +275,21 @@ class GraphVisualizer {
     const links = layout.links();
     const nodesMap = this.reduceArray(nodes);
     tree(layout);
-    
+
     nodes.forEach(d => {
       d.depth = d.data.etapa;
-      d.y = d.depth * this.config.renderOptions.spaceBetweenDepthLevels;
+      d.y = d.depth * spaceBetweenDepthLevels;
+      if (!this.nodeMoreBelow || d.x > this.nodeMoreBelow.x) {
+        this.nodeMoreBelow = d;
+      }
     });
 
     const nodeGroup = this.drawNodes(nodes);
 
     nodeGroup
       .append("rect")
-      .attr("width", this.config.renderOptions.boxWidth)
-      .attr("height", this.config.renderOptions.boxHeight)
+      .attr("width", boxWidth)
+      .attr("height", boxHeight)
       .attr("fill", "#fff")
       .attr("stroke", d => (d.data.alert ? "#f00" : "#000"))
       .attr("stroke-width", 1);
@@ -302,7 +314,60 @@ class GraphVisualizer {
       .attr("dx", 5)
       .text(d => d.info);
 
+    if (this.hasButtons) {
+      const buttonContainer = nodeGroup.append("g");
+      buttonContainer.attr("class", "button")
+      .append("rect")
+      .attr("width", buttonWidth)
+      .attr("height", buttonHeight)
+      .attr("rx", 5)
+      .attr("ry", 5)
+      .attr("y", d => boxHeight + buttonMargin)
+      .attr("fill", "#80b1e1")
+      .attr("stroke", "#80b1e1")
+      .text("click")
+      .on("click", this.onClickButton);
+
+      buttonContainer
+        .append("text")
+        .attr("fill", "#fff")
+        .attr("x", 10)
+        .attr("y", d => boxHeight + buttonMargin + (buttonHeight / 1.5))
+        .text("CLICK");
+    }
+
     this.drawLinks(links, nodes);
+  }
+
+  renderSVG() {
+    const zoomed = d => {
+      const zoomContainer = window.d3.select(".svg-container");
+      zoomContainer.attr("transform", d3.event.transform);
+    };
+
+    this.svg = window.d3
+      .select(".graph-container")
+      .append("svg")
+      .attr("width", this.config.renderOptions.svgWidth)
+      .attr("height", this.config.renderOptions.svgHeight)
+      .append("g")
+      .attr("class", "zoom-container")
+      .call(
+        d3
+          .zoom()
+          .scaleExtent([1 / 4, 4])
+          .on("zoom", zoomed)
+      )
+      .append("g")
+      .attr("class", "svg-container");
+
+    this.areasElement = this.svg.append("g").attr("class", "areas");
+    this.treeElement = this.svg.append("g").attr("class", "tree");
+  }
+
+  redrawGraph() {
+    window.d3.select("svg").remove();
+    this.init();
   }
 }
 

@@ -388,6 +388,9 @@ const linksData = [
 const config = () => {
   const LINK_CLASS = "link";
   const NODE_CLASS = "node";
+  const BUTTON_WIDTH = 120;
+  const BUTTON_HEIGHT = 35;
+  const BUTTON_MARGIN = 10;
   const BOX_WIDTH = 500;
   const BOX_HEIGHT = 180;
   const COLUNA_WIDTH = BOX_WIDTH + BOX_WIDTH / 2;
@@ -400,6 +403,11 @@ const config = () => {
   return {
     UPSALE_TYPE: "upsale",
     renderOptions: {
+      button: {
+        width: BUTTON_WIDTH,
+        height: BUTTON_HEIGHT,
+        margin: BUTTON_MARGIN
+      },
       boxWidth: BOX_WIDTH,
       boxHeight: BOX_HEIGHT,
       svgWidth: SVG_WIDTH,
@@ -411,7 +419,7 @@ const config = () => {
       },
       spaceBetweenDepthLevels: SPACE_BETWEEN_DEPTH_LEVELS,
       topDirectedLinkPathCoord: TOP_DIRECTED_LINK_PATH_COORD,
-      bottomDirectedLinkPathCoord: BOTTOM_DIRECTED_LINK_PATH_COORD,
+      bottomDirectedLinkPathCoord: BOTTOM_DIRECTED_LINK_PATH_COORD
     }
   }
 }
