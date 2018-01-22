@@ -28,9 +28,9 @@ class GraphVisualizer {
     this.redrawGraph();
   }
 
-  onClickButton(b) {
-    console.log('onClickButton', b);
-    window.alert(`CLICOUUU ${b.data.name}`);
+  onClickButton(d) {
+    console.log('onClickButton', d);
+    window.alert(`CLICOUUU ${d.data.name}`);
   }
 
   reduceArray(arr) {
@@ -134,7 +134,7 @@ class GraphVisualizer {
 
     let targets;
     let maxTargetsCount = 0;
-    // Drawing links for one parent
+    
     const nodesMap = this.reduceArray(nodes);
     const link = this.svg
       .select(".tree")
@@ -150,7 +150,7 @@ class GraphVisualizer {
       )
       .attr("d", diagonal);
 
-    //Adding links in case when it is several parents for one node
+    // Adding links in case when it is several parents for one node
     const addSpecialParent = position => {
       link
         .enter()
@@ -216,7 +216,6 @@ class GraphVisualizer {
   }
 
   renderAreas() {
-    
     const colunas =
       this.areasElement
       .selectAll("g.area")
@@ -315,18 +314,19 @@ class GraphVisualizer {
       .text(d => d.info);
 
     if (this.hasButtons) {
-      const buttonContainer = nodeGroup.append("g");
+      const buttonContainer = nodeGroup.append("g")
+        .on("click", this.onClickButton);
+
       buttonContainer.attr("class", "button")
-      .append("rect")
-      .attr("width", buttonWidth)
-      .attr("height", buttonHeight)
-      .attr("rx", 5)
-      .attr("ry", 5)
-      .attr("y", d => boxHeight + buttonMargin)
-      .attr("fill", "#80b1e1")
-      .attr("stroke", "#80b1e1")
-      .text("click")
-      .on("click", this.onClickButton);
+        .append("rect")
+        .attr("width", buttonWidth)
+        .attr("height", buttonHeight)
+        .attr("rx", 5)
+        .attr("ry", 5)
+        .attr("y", d => boxHeight + buttonMargin)
+        .attr("fill", "#80b1e1")
+        .attr("stroke", "#80b1e1")
+        .text("click");
 
       buttonContainer
         .append("text")
